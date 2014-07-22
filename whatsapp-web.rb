@@ -12,38 +12,49 @@ if __FILE__ == $0
   omitted = /<media omitted>$/
   attached = /(.+) <attached>$/
 
+  chatter = nil
+
   data = File.open(DATAFILE, 'r')
   data.each do | line |
     if msg = msg_begin.match(line.chomp)
+      if not chatter.nil?
+        puts chatter
+        puts
+        chatter = nil
+      end
+
       # create a DateTime object from a string (timezone is set to SGT)
-      #puts "stamp: #{msg[1]}"
       stamp = DateTime.strptime("#{msg[1]} SGT", "%d/%m/%y %l:%M:%S %P %Z")
       line = msg[2].chomp
 
       if line.index(':').nil?
-        puts "status: #{stamp}: #{line}"
+        chatter = "#{stamp}: #{line}"
       else
         index = line.index(':')
         name = line.slice(0..index - 1)
         line = line.slice(index + 1..-1).strip
 
-        action = "says"
+        action = "says:"
         if o = omitted.match(line)
           action = "<media omitted>"
         elsif a = attached.match(line)
-          action = "uploads"
+          action = "uploads:"
           line = a[1] 
         end
 
+        header = "#{stamp}: #{name}"
+
         if action == "<media omitted>"
-          puts "action: #{stamp}: #{name}: #{action}"
-        else
-          puts "action: #{stamp}: #{name} #{action}:"
-          puts "#{line}"
+          header += ":"
+        end
+
+        chatter = "#{header} #{action}"
+        if action != "<media omitted>"
+          chatter += "\n#{line}"
         end
       end
     else
-      puts "... #{line.chomp}"
+      chatter += "\n...#{line.chomp}"
     end
   end
 end
