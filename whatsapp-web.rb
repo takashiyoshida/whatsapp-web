@@ -13,13 +13,13 @@ if __FILE__ == $0
   attached = /(.+) <attached>$/
 
   chatter = nil
+  chatters = Array.new
 
   data = File.open(DATAFILE, 'r')
   data.each do | line |
     if msg = msg_begin.match(line.chomp)
       if not chatter.nil?
-        puts chatter
-        puts
+        chatters.push(chatter)
         chatter = nil
       end
 
@@ -56,5 +56,10 @@ if __FILE__ == $0
     else
       chatter += "\n...#{line.chomp}"
     end
+  end
+
+  chatters.each do | chatter |
+    puts chatter
+    puts
   end
 end
